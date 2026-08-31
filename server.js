@@ -4,6 +4,7 @@ const express = require("express");
 const pool = require("./dbconfig/db");
 const userRoutes = require("./users/users.routes");
 const authRoutes = require("./auth/auth.routes");
+const noteRoutes = require("./notes/notes.routes");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
@@ -24,6 +25,7 @@ const PORT = 5000;
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/notes", noteRoutes);
 
 
 pool.query("select now()")
