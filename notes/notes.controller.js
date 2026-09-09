@@ -1,4 +1,4 @@
-const { createNote, findFolderByUser, getNotes, editNote, deleteNote } = require("./notes.queries");
+const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus } = require("./notes.queries");
 
 const createNoteController = async (req, res) => {
     try {
@@ -118,6 +118,76 @@ const removeNote = async (req, res) => {
     }
 }
 
+const archiveNote = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { id, is_archived } = req.body;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Note ID is required to archive note"
+            })
+        }
+
+        const note = await updateArchiveStatus(id, userId, is_archived);
+        if (!note) {
+            return res.status(404).json({
+                success: false,
+                message: "Note not found"
+            })
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: "Note archived successfully",
+            note
+        })
+    } catch (err) {
+        console.error("Error archiving note", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Cannot archive note"
+        })
+    }
+}
+
+const favoriteNote = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { id, is_favorite } = req.body;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Note ID is required"
+            })
+        }
+
+        const note = await updateFavoriteStatus(id, userId, is_favorite);
+        if (!note) {
+            return res.status(404).json({
+                success: false,
+                message: "Note not found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Note added to favorite",
+            note
+        })
+    } catch (err) {
+        console.error("Error starring note", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Cannot favorite note"
+        })
+    }
+}
+
 module.exports = {
-    createNoteController, getUserNotes, updateNote, removeNote
+    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote
 };

@@ -44,10 +44,28 @@ const deleteNote = async (userId, id) => {
     return result.rows[0];
 }
 
+/* =================NOTES ACTIONS========================== */
+
+const updateArchiveStatus = async (id, userId, isArchived) => {
+    const query = `UPDATE notes SET is_archived = $1 WHERE id = $2 AND user_id = $3 RETURNING *`
+    const values = [isArchived, id, userId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+}
+
+const updateFavoriteStatus = async (id, userId, isFavorite) => {
+    const query = `UPDATE notes SET is_favorite = $1 WHERE id = $2 AND user_id = $3 RETURNING *`
+    const values = [isFavorite, id, userId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+}
+
 module.exports = {
     createNote,
     findFolderByUser,
     getNotes,
     editNote,
-    deleteNote
+    deleteNote,
+    updateArchiveStatus,
+    updateFavoriteStatus
 }
