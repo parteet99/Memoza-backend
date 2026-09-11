@@ -112,7 +112,7 @@ const getfolderById = async (req, res) => {
 const updateFolderName = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { id, name } = req.query;
+        const { id, name } = req.body;
 
         if (!name || !name.trim()) {
             return res.status(400).json({
