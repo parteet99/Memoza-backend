@@ -56,6 +56,7 @@ const getFolder = async (req, res) => {
 
         return res.status(200).json({
             success: true, 
+            message: "Folders fetched successfully",
             folders
         })
     } catch (err) {
@@ -71,7 +72,7 @@ const getFolder = async (req, res) => {
 const getfolderById = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { id } = req.query;
+        const { id } = req.body;
         if (!id) {
             return res.status(400).json({
                 success: false,
@@ -111,8 +112,7 @@ const getfolderById = async (req, res) => {
 const updateFolderName = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { id } = req.query;
-        const { name } = req.body;
+        const { id, name } = req.query;
 
         if (!name || !name.trim()) {
             return res.status(400).json({
@@ -164,7 +164,7 @@ const updateFolderName = async (req, res) => {
 const deletefolder = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { id } = req.query;
+        const { id } = req.body;
         if (!id) {
             return res.status(400).json({
                 success: false,
@@ -238,16 +238,16 @@ const noteToFolder = async (req, res) => {
 const notesByFolder = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { folder_id } = req.body;
+        const { id } = req.query;
 
-        if (!folder_id) {
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 message: "Folder ID is required to fetch notes"
             })
         }
 
-        const folder = await getNotesByFolder(folder_id, userId);
+        const folder = await getNotesByFolder(id, userId);
         if (!folder) {
             return res.status(404).json({
                 success: false,
