@@ -24,7 +24,7 @@ const findFolderByUser = async (folderId, userId) => {
 }
 
 const getNotes = async (userId) => {
-    const query = `SELECT * FROM notes WHERE user_id = $1`;
+    const query = `SELECT * FROM notes WHERE user_id = $1 ORDER BY is_pinned DESC, created_at DESC`;
     const values = [userId];
     const result = await pool.query(query, values);
     return result.rows;
@@ -60,6 +60,13 @@ const updateFavoriteStatus = async (id, userId, isFavorite) => {
     return result.rows[0];
 }
 
+const updatePinStatus = async (id, userId, isPinned) => {
+    const query = `UPDATE notes SET is_pinned = $1 WHERE id = $2 AND user_id = $3 RETURNING *`
+    const values = [isPinned, id, userId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+}
+
 module.exports = {
     createNote,
     findFolderByUser,
@@ -67,5 +74,6 @@ module.exports = {
     editNote,
     deleteNote,
     updateArchiveStatus,
-    updateFavoriteStatus
+    updateFavoriteStatus,
+    updatePinStatus
 }
