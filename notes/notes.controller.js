@@ -1,4 +1,4 @@
-const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus } = require("./notes.queries");
+const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus } = require("./notes.queries");
 
 const createNoteController = async (req, res) => {
     try {
@@ -188,6 +188,43 @@ const favoriteNote = async (req, res) => {
     }
 }
 
+const pinNote = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { id, is_pinned } = req.body;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Note ID is required to pin note"
+            })
+        }
+
+        const note = await updatePinStatus(id, userId, is_pinned);
+        if (!note) {
+            return res.status(404).json({
+                success: false,
+                message: "Note not found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: is_pinned
+                ? "Note pinned successfully"
+                : "Note unpinned successfully",
+            note
+        })
+    } catch (error) {
+        console.error("Error pinning note", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to pin note"
+        })
+    }
+}
+
 module.exports = {
-    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote
+    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote
 };
