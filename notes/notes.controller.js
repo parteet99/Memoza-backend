@@ -1,4 +1,4 @@
-const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus } = require("./notes.queries");
+const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash } = require("./notes.queries");
 
 const createNoteController = async (req, res) => {
     try {
@@ -225,6 +225,98 @@ const pinNote = async (req, res) => {
     }
 }
 
+
+const trashNotes = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const notes = await getTrashNotes(userId);
+        if (!notes) {
+            return res.status(404).json({
+                success: false,
+                message: "Trash notes not found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Trash fetched successfully",
+            notes
+        })
+    } catch (error) {
+        console.error("Error getting trash notes", error);
+        return res.status(500).json({
+            success: false,
+            message: "Unable to get trashed notes"
+        })
+    }
+}
+
+const restoreTrash = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { id } = req.body;
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Note ID is required to restore"
+            })
+        }
+
+        const notes = await restoreNote(id, userId)
+        if (!notes) {
+            return res.status(404).json({
+                success: false,
+                message: "Note not found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Note restored successfully",
+            notes
+        })
+    } catch (error) {
+        console.error("Error restoring note", error);
+        return res.status(500).json({
+            success: false,
+            message: "Unable to restore note"
+        })
+    }
+}
+
+const permanentDeleteNote = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Note ID(s) is required to restore"
+            })
+        }
+
+        const notes = await deleteTrash(ids, userId)
+        if (notes.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No trashed notes found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Note deleted successfully",
+            notes
+        })
+    } catch (error) {
+        console.error("Error deleting note", error);
+        return res.status(500).json({
+            success: false,
+            message: "Unable to delete note"
+        })
+    }
+}
+
 module.exports = {
-    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote
+    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, restoreTrash, permanentDeleteNote
 };

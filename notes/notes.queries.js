@@ -24,7 +24,7 @@ const findFolderByUser = async (folderId, userId) => {
 }
 
 const getNotes = async (userId) => {
-    const query = `SELECT * FROM notes WHERE user_id = $1 ORDER BY is_pinned DESC, created_at DESC`;
+    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = false ORDER BY is_pinned DESC, created_at DESC`;
     const values = [userId];
     const result = await pool.query(query, values);
     return result.rows;
@@ -38,7 +38,29 @@ const editNote = async (id, userId, title, content) => {
 }
 
 const deleteNote = async (userId, id) => {
-    const query = `DELETE FROM notes WHERE id = $1 AND user_id = $2`
+    const query = `UPDATE notes SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 AND is_deleted = false RETURNING *`
+    const values = [id, userId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+}
+
+
+const getTrashNotes = async (userId) => {
+    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = true ORDER BY deleted_at DESC` 
+    const values = [userId];
+    const result = await pool.query(query, values);
+    return result.rows;
+}
+
+const restoreNote = async (id, userId) => {
+    const query = `UPDATE notes SET is_deleted = false, deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 AND is_deleted = true RETURNING *`
+    const values = [id, userId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+}
+
+const deleteTrash = async(id, userId) => {
+    const query = `DELETE FROM notes WHERE id = ANY($1) AND user_id = $2 AND is_deleted = true RETURNING *`
     const values = [id, userId];
     const result = await pool.query(query, values);
     return result.rows[0];
@@ -75,5 +97,8 @@ module.exports = {
     deleteNote,
     updateArchiveStatus,
     updateFavoriteStatus,
-    updatePinStatus
+    updatePinStatus,
+    getTrashNotes,
+    restoreNote,
+    deleteTrash
 }
