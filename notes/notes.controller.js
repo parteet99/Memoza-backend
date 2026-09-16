@@ -1,4 +1,4 @@
-const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash } = require("./notes.queries");
+const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash, getArchiveNotes } = require("./notes.queries");
 
 const createNoteController = async (req, res) => {
     try {
@@ -225,6 +225,32 @@ const pinNote = async (req, res) => {
     }
 }
 
+const archiveNoteList = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const notes = await getArchiveNotes(userId);
+        if (!notes) {
+            return res.status(404).json({
+                success: false,
+                message: "No archive notes found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Archive notes fetched successfully",
+            notes
+        })
+    } catch (error) {
+        console.error("Error fetching archived notes", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch archived notes"
+        })
+    }
+}
+
 
 const trashNotes = async (req, res) => {
     try {
@@ -318,5 +344,5 @@ const permanentDeleteNote = async (req, res) => {
 }
 
 module.exports = {
-    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, restoreTrash, permanentDeleteNote
+    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, restoreTrash, permanentDeleteNote, archiveNoteList
 };

@@ -44,6 +44,13 @@ const deleteNote = async (userId, id) => {
     return result.rows[0];
 }
 
+const getArchiveNotes = async (userId) => {
+    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = false AND is_archived = true`
+    const values = [userId];
+    const result = await pool.query(query, values);
+    return result.rows;
+}
+
 
 const getTrashNotes = async (userId) => {
     const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = true ORDER BY deleted_at DESC` 
@@ -100,5 +107,6 @@ module.exports = {
     updatePinStatus,
     getTrashNotes,
     restoreNote,
-    deleteTrash
+    deleteTrash,
+    getArchiveNotes
 }
