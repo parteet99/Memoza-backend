@@ -280,16 +280,16 @@ const trashNotes = async (req, res) => {
 const restoreTrash = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { id } = req.body;
-        if (!id) {
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: "Note ID is required to restore"
+                message: "Note ID(s) is required to restore"
             })
         }
 
-        const notes = await restoreNote(id, userId)
-        if (!notes) {
+        const notes = await restoreNote(ids, userId)
+        if (notes.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: "Note not found"
@@ -317,7 +317,7 @@ const permanentDeleteNote = async (req, res) => {
         if (!Array.isArray(ids) || ids.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: "Note ID(s) is required to restore"
+                message: "Note ID(s) is required to delete note"
             })
         }
 

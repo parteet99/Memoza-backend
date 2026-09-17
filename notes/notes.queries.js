@@ -24,7 +24,7 @@ const findFolderByUser = async (folderId, userId) => {
 }
 
 const getNotes = async (userId) => {
-    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = false ORDER BY is_pinned DESC, created_at DESC`;
+    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = false AND is_archived = false ORDER BY is_pinned DESC, created_at DESC`;
     const values = [userId];
     const result = await pool.query(query, values);
     return result.rows;
@@ -60,7 +60,7 @@ const getTrashNotes = async (userId) => {
 }
 
 const restoreNote = async (id, userId) => {
-    const query = `UPDATE notes SET is_deleted = false, deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 AND is_deleted = true RETURNING *`
+    const query = `UPDATE notes SET is_deleted = false, deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($1) AND user_id = $2 AND is_deleted = true RETURNING *`
     const values = [id, userId];
     const result = await pool.query(query, values);
     return result.rows[0];
