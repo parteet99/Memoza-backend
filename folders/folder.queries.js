@@ -77,7 +77,7 @@ const moveNoteToFolder = async (noteId, folderId, userId) => {
 }
 
 const getNotesByFolder = async (folderId, userId) => {
-    const query = `SELECT * FROM notes WHERE folder_id = $1 AND user_id = $2 ORDER BY updated_at DESC`
+    const query = `SELECT * FROM notes WHERE folder_id = $1 AND user_id = $2 AND is_deleted = false ORDER BY updated_at DESC`
     const values = [folderId, userId];
     const result = await pool.query(query, values);
     return result.rows;
