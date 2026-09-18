@@ -1,4 +1,4 @@
-const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash, getArchiveNotes } = require("./notes.queries");
+const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash, getArchiveNotes, searchNotes } = require("./notes.queries");
 
 const createNoteController = async (req, res) => {
     try {
@@ -343,6 +343,32 @@ const permanentDeleteNote = async (req, res) => {
     }
 }
 
+const getSearchNote = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { query } = req.query;
+        if (!query || !query.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Search query is required"
+            })
+        }
+
+        const notes = await searchNotes(query.trim(), userId);
+
+        return res.status(200).json({
+            success: true,
+            notes
+        })
+    } catch (error) {
+        console.error("Error searching notes", error);
+        return res.status(500).json({
+            success: false,
+            message: "Unable to search notes"
+        })
+    }
+}
+
 module.exports = {
-    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, restoreTrash, permanentDeleteNote, archiveNoteList
+    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, restoreTrash, permanentDeleteNote, archiveNoteList, getSearchNote
 };

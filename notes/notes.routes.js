@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, permanentDeleteNote, archiveNoteList, restoreTrash } = require("../notes/notes.controller");
+const { createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, permanentDeleteNote, archiveNoteList, restoreTrash, getSearchNote } = require("../notes/notes.controller");
 const requireAuth = require("../middleware/auth.middleware");
 
 router.post("/create-note", requireAuth, createNoteController);
@@ -14,5 +14,7 @@ router.post("/pin-note", requireAuth, pinNote);
 router.get("/trash-notes", requireAuth, trashNotes);
 router.post("/restore-note", requireAuth, restoreTrash);
 router.delete("/permanent-delete", requireAuth, permanentDeleteNote);
+
+router.get("/search-note", requireAuth, getSearchNote);
 
 module.exports = router;

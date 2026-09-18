@@ -96,6 +96,15 @@ const updatePinStatus = async (id, userId, isPinned) => {
     return result.rows[0];
 }
 
+/* =======================Filters====================================== */
+
+const searchNotes = async (query, userId) => {
+    const sql = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = false AND (title ILIKE $2 OR content ILIKE $2) ORDER BY is_pinned DESC, updated_at DESC` 
+    const values = [userId, `%${query}%`]
+    const result = await pool.query(sql, values);
+    return result.rows;
+}
+
 module.exports = {
     createNote,
     findFolderByUser,
@@ -108,5 +117,6 @@ module.exports = {
     getTrashNotes,
     restoreNote,
     deleteTrash,
-    getArchiveNotes
+    getArchiveNotes,
+    searchNotes
 }
