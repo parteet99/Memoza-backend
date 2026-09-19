@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 
 const { getUserByEmail } = require("../users/users.queries");
+const { udpateUserPassword, getUserPassword } = require("./auth.queries");
 
 const loginUser = async (req, res) => {
     try {
@@ -81,7 +82,58 @@ const logoutUser = async (req, res) => {
     }
 };
 
+const changePassword = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "All password fields are required"
+            })
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New password and confirm password does not match"
+            })
+        }
+
+        const user = await getUserPassword(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            })
+        }
+
+        const isPasswordValid = await bcrypt.compare(oldPassword, user.password_hash);
+        if (!isPasswordValid) {
+            return res.status(400).json({
+                success: false,
+                message: "Old password is incorrect"
+            })
+        }
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+
+        await udpateUserPassword(userId, passwordHash);
+
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully"
+        })
+    } catch (error) {
+        console.error("Error updating password", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update password"
+        })
+    }
+}
 
 module.exports = {
-    loginUser, logoutUser
+    loginUser, logoutUser, changePassword
 }
