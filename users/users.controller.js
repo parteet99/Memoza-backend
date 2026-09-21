@@ -25,12 +25,14 @@ const registerUser = async (req, res) => {
 
         //postgresql unique violation
         if (err.code === "23505") {
-            return res.json(409).json({
-                error: "Email already exists"
+            return res.status(409).json({
+                success: false,
+                message: "Email already exists",
+                // message: "Email already exists"
             })
         }
 
-        res.json(500).json({
+        return res.json(500).json({
             error: "Failed to create user"
         })
     }
