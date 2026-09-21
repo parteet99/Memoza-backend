@@ -1,8 +1,10 @@
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 
 const { getUserByEmail } = require("../users/users.queries");
-const { udpateUserPassword, getUserPassword } = require("./auth.queries");
+const { udpateUserPassword, getUserPassword, deleteExistingResetToken, deletePasswordResetToken, findUserByEmail, findValidResetToken, updateUserPassword, createPasswordResetToken } = require("./auth.queries");
+const { sendPasswordResetEmail } = require("../utils/sendPasswordResetEmail");
 
 const loginUser = async (req, res) => {
     try {
@@ -134,6 +136,102 @@ const changePassword = async (req, res) => {
     }
 }
 
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required"
+            })
+        }
+
+        const user = await findUserByEmail(email);
+        if (!user) {   //here dont reveal whether email exists or not
+            return res.status(200).json({
+                message: "If an account exists with this email, a password reset link has been sent"
+            })
+        }
+
+        //remove previous reset tokens
+        await deleteExistingResetToken(user.id);
+
+        //generate random token
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        //hash token before saving
+        const tokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);  //set 15 minutes
+
+        await createPasswordResetToken(user.id, tokenHash, expiresAt);
+
+        await sendPasswordResetEmail(user.email, resetToken);
+
+        return res.status(200).json({
+            success: true,
+            message: "If an account exists with this email, a password reset link has been sent"
+        })
+
+    } catch (error) {
+        console.error("Forgot password error", error);
+        return res.status(500).json({
+            succes: false,
+            message: "Something went wring"
+        })
+    }
+}
+
+
+const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Token and new password is required"
+            })
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be atleast 8 characters"
+            })
+        }
+
+        //hash token received from frontend
+        const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+        const resetToken = await findValidResetToken(tokenHash);
+        if (!resetToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid or expired reset token"
+            })
+        }
+
+        //hash new password
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+
+        await updateUserPassword(resetToken.user_id, passwordHash);
+
+        await deletePasswordResetToken(resetToken.id);//delete token after password reset
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successfully"
+        })
+    } catch (error) {
+        console.error("Reset password error", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong"
+        })
+    }
+}
+
 module.exports = {
-    loginUser, logoutUser, changePassword
+    loginUser, logoutUser, changePassword, forgotPassword, resetPassword
 }
