@@ -3,12 +3,15 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendPasswordResetEmail = async (email, token) => {
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
     await resend.emails.send({
         from: "Memoza <onboarding@resend.dev>",
         to: [email],
         subject: "Reset your memoza password",
+        tracking: {
+            clicks: false
+        },
         html: `
             <div style="font-family: Arial, sans-serif;">
                 <h2>Reset your Memoza password</h2>
