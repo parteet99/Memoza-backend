@@ -10,3 +10,4 @@ cors
 cookie-parser
 multer
 cloudinary
+express-rate-limit

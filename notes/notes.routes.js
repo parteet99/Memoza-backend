@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, permanentDeleteNote, archiveNoteList, restoreTrash, getSearchNote } = require("../notes/notes.controller");
 const requireAuth = require("../middleware/auth.middleware");
+const { uploadLimit } = require("../middleware/rateLimiter");
 
 const multer = require("multer");
 const cloudinary = require("../config/cloudinary");
@@ -28,7 +29,7 @@ router.delete("/permanent-delete", requireAuth, permanentDeleteNote);
 
 router.get("/search-note", requireAuth, getSearchNote);
 
-router.post("/upload-image", upload.single("image"), async (req, res) => {
+router.post("/upload-image", requireAuth, uploadLimit, upload.single("image"), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
