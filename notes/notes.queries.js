@@ -23,11 +23,18 @@ const findFolderByUser = async (folderId, userId) => {
     return result.rows[0];
 }
 
-const getNotes = async (userId) => {
-    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = false AND is_archived = false ORDER BY is_pinned DESC, created_at DESC`;
-    const values = [userId];
+const getNotes = async (userId, limit, offset) => { 
+    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = false AND is_archived = false ORDER BY is_pinned DESC, updated_at DESC LIMIT $2 OFFSET $3`;
+    const values = [userId, limit, offset];
     const result = await pool.query(query, values);
     return result.rows;
+}
+
+const getNoteCount = async (userId) => {
+    const query = `SELECT COUNT(*) AS TOTAL FROM notes WHERE user_id = $1 AND is_deleted = false`;
+    const values = [userId];
+    const result = await pool.query(query, values);
+    return Number(result.rows[0].total);
 }
 
 const editNote = async (id, userId, title, content) => {
@@ -118,5 +125,6 @@ module.exports = {
     restoreNote,
     deleteTrash,
     getArchiveNotes,
-    searchNotes
+    searchNotes,
+    getNoteCount
 }
