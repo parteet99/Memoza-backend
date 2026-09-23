@@ -1,4 +1,4 @@
-const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash, getArchiveNotes, searchNotes } = require("./notes.queries");
+const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash, getArchiveNotes, searchNotes, getNoteCount } = require("./notes.queries");
 
 const createNoteController = async (req, res) => {
     try {
@@ -46,18 +46,27 @@ const createNoteController = async (req, res) => {
 const getUserNotes = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const notes = await getNotes(userId);
-        if (!notes) {
-            return res.status(400).json({
-                success: false,
-                message: "Failed to fetch notes"
-            })
-        }
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        const [notes, totalNotes] = await Promise.all([
+            getNotes(userId, limit, offset),
+            getNoteCount(userId)
+        ]);
+
+        const totalPages = Math.ceil(totalNotes / limit);
 
         return res.status(201).json({
             success: true,
             message: "Fetched users notes successfully.",
-            notes
+            notes,
+            pagination: {
+                page,
+                limit,
+                totalNotes,
+                totalPages
+            }
         })
     } catch (err) {
         console.error("Failed to fetch notes", err);
