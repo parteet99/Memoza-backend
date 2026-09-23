@@ -9,3 +9,4 @@ jsonwebtoken
 cors
 cookie-parser
 multer
+cloudinary
