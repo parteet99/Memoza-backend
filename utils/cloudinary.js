@@ -11,8 +11,6 @@ const deleteImageFromContent = async (content) => {
 
         try {
             await cloudinary.uploader.destroy(publicId);
-
-            console.log("Deleted: ", publicId);
         } catch (error) {
             console.error("Failed to delete", publicId, error);
         }
