@@ -77,7 +77,7 @@ const deleteTrash = async(id, userId) => {
     const query = `DELETE FROM notes WHERE id = ANY($1) AND user_id = $2 AND is_deleted = true RETURNING *`
     const values = [id, userId];
     const result = await pool.query(query, values);
-    return result.rows[0];
+    return result.rows;
 }
 
 /* =================NOTES ACTIONS========================== */

@@ -1,5 +1,7 @@
 const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash, getArchiveNotes, searchNotes, getNoteCount } = require("./notes.queries");
 
+const { deleteImageFromContent } = require("../utils/cloudinary");
+
 const createNoteController = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -323,7 +325,7 @@ const permanentDeleteNote = async (req, res) => {
     try {
         const userId = req.user.userId;
         const { ids } = req.body;
-        if (!Array.isArray(ids) || ids.length === 0) {
+        if (!Array.isArray(ids) || ids?.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: "Note ID(s) is required to delete note"
@@ -331,11 +333,15 @@ const permanentDeleteNote = async (req, res) => {
         }
 
         const notes = await deleteTrash(ids, userId)
-        if (notes.length === 0) {
+        if (notes?.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: "No trashed notes found"
             });
+        }
+
+        for (const note of notes) {
+            await deleteImageFromContent(note.content); //delete each note from cloudinary
         }
 
         return res.status(200).json({
