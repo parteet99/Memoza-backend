@@ -112,6 +112,19 @@ const searchNotes = async (query, userId) => {
     return result.rows;
 }
 
+
+/* Import action */
+
+const importNoteQuery = async (userId, title, content, isPinned = false, isFavorite = false, isArchived = false) => {
+    const query = `
+        INSERT INTO notes (user_id, title, content, is_pinned, is_favorite, is_archived, is_deleted)
+        VALUES ($1, $2, $3, $4, $5, $6, false) RETURNING id, user_id, title, content, is_pinned, is_favorite, is_archived, is_deleted, created_at, updated_at, deleted_at
+    `
+    const values = [userId, title, content, isPinned, isFavorite, isArchived];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+}
+
 module.exports = {
     createNote,
     findFolderByUser,
@@ -126,5 +139,6 @@ module.exports = {
     deleteTrash,
     getArchiveNotes,
     searchNotes,
-    getNoteCount
+    getNoteCount,
+    importNoteQuery
 }

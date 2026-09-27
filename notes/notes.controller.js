@@ -1,4 +1,4 @@
-const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash, getArchiveNotes, searchNotes, getNoteCount } = require("./notes.queries");
+const { createNote, findFolderByUser, getNotes, editNote, deleteNote, updateArchiveStatus, updateFavoriteStatus, updatePinStatus, getTrashNotes, restoreNote, deleteTrash, getArchiveNotes, searchNotes, getNoteCount, importNoteQuery } = require("./notes.queries");
 
 const { deleteImageFromContent } = require("../utils/cloudinary");
 
@@ -384,6 +384,56 @@ const getSearchNote = async (req, res) => {
     }
 }
 
+const importNote = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { title, content, is_pinned = false, is_favorite = false, is_archived = false } = req.body;
+
+        if (!title || typeof title !== "string") {
+            return res.status(400).json({
+                success: false,
+                message: "Note title is required"
+            })
+        }
+
+        if (typeof content !== "string") {
+            return res.status(400).json({
+                success: false,
+                message: "Note content is required"
+            })
+        }
+
+        const trimmedTitle = title.trim();
+        if (!trimmedTitle) {
+            return res.status(400).json({
+                success: false,
+                message: "Note title cannot be empty"
+            })
+        }
+
+        const note = await importNoteQuery(userId, trimmedTitle, content, Boolean(is_archived), Boolean(is_favorite), Boolean(is_pinned))
+
+        if (!note) {
+            return res.status(400).json({
+                success: false,
+                message: "Failed to import note"
+            })
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: "Note imported successfully"
+        })
+    } catch (error) {
+        console.error("Error importing note", error);
+
+        return res.status(500).json({
+            success: false, 
+            message: "Cannot import note"
+        })
+    }
+}
+
 module.exports = {
-    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, restoreTrash, permanentDeleteNote, archiveNoteList, getSearchNote
+    createNoteController, getUserNotes, updateNote, removeNote, archiveNote, favoriteNote, pinNote, trashNotes, restoreTrash, permanentDeleteNote, archiveNoteList, getSearchNote, importNote
 };
