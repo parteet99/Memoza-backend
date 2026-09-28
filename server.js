@@ -7,6 +7,7 @@ const authRoutes = require("./auth/auth.routes");
 const noteRoutes = require("./notes/notes.routes");
 const folderRoutes = require("./folders/folder.routes");
 const favoriteRoutes = require("./favorite/favorite.routes");
+const countRoutes = require("./dashboard/dashboard.routes");
 const aiRoutes = require("./AI/ai.routes")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -32,6 +33,7 @@ app.use("/api/notes", noteRoutes);
 app.use("/api/folders", folderRoutes);
 app.use("/api/favorite", favoriteRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/count", countRoutes);
 
 
 pool.query("select now()")
