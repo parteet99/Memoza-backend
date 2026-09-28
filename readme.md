@@ -20,6 +20,7 @@ Key Features
 - Move notes into folders
 - Trash and permanently delete notes
 - Bulk deletion of notes
+- Import and Export feature (in JSON and TEXT format)
 - Pagination for large collections of notes
 - User profile management
 - Profile image upload
