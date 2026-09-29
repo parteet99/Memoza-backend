@@ -33,7 +33,7 @@ app.use("/api/notes", noteRoutes);
 app.use("/api/folders", folderRoutes);
 app.use("/api/favorite", favoriteRoutes);
 app.use("/api/ai", aiRoutes);
-app.use("/api/count", countRoutes);
+app.use("/api/dashboard", countRoutes);
 
 
 pool.query("select now()")
