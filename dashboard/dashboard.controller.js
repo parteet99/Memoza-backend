@@ -24,11 +24,11 @@ const folderCount = async (req, res) => {
     try {
         const userId = req.user.userId;
 
-        const count = await getFolderCount(userId);
+        const note = await getFolderCount(userId);
 
         return res.status(200).json({
             success: true,
-            count
+            note
         })
     } catch (error) {
         console.error("Failed to get folder count", error);
