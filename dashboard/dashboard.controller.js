@@ -1,4 +1,4 @@
-const { getArchiveCount, getFolderCount, getNoteCount, getTrashCount } = require("./dashboard.queries")
+const { getArchiveCount, getFolderCount, getNoteCount, getTrashCount, getPinnedNotes, getRecentlyUpdatedNotes } = require("./dashboard.queries")
 
 const noteCount = async (req, res) => {
     try {
@@ -80,6 +80,47 @@ const archiveCount = async (req, res) => {
     }
 }
 
+const pinnedNotes = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        const note = await getPinnedNotes(userId);
+
+        return res.status(200).json({
+            success: true,
+            note
+        })
+    } catch (error) {
+        console.error("Failed to get pinned notes", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Cannot get pinned notes"
+        })
+    }
+}
+
+const recentlyUpdatedNotes = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        const note = await getRecentlyUpdatedNotes(userId);
+
+        return res.status(200).json({
+            success: true,
+            note
+        })
+    } catch (error) {
+        console.error("Failed to get recently updated notes", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Cannot get recently updated notes"
+        })
+    }
+}
+
+
 module.exports = {
-    noteCount, archiveCount, folderCount, trashCount
+    noteCount, archiveCount, folderCount, trashCount, pinnedNotes, recentlyUpdatedNotes
 }

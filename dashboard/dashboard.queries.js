@@ -28,9 +28,25 @@ const getArchiveCount = async (userId) => {
     return Number(result.rows[0].total);
 }
 
+const getPinnedNotes = async (userId) => {
+    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_pinned = true AND is_deleted = false AND is_archived = false ORDER BY updated_at DESC LIMIT 3`
+    const values = [userId];
+    const result = await pool.query(query, values);
+    return result.rows;
+}
+
+const getRecentlyUpdatedNotes = async (userId) => {
+    const query = `SELECT * FROM notes WHERE user_id = $1 AND is_deleted = false AND is_archived = false ORDER BY updated_at DESC LIMIT 3`
+    const values = [userId];
+    const result = await pool.query(query, values);
+    return result.rows;
+}
+
 module.exports = {
     getArchiveCount,
     getFolderCount,
     getNoteCount, 
-    getTrashCount
+    getTrashCount,
+    getPinnedNotes,
+    getRecentlyUpdatedNotes
 }
