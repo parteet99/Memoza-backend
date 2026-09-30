@@ -48,10 +48,10 @@ const getUserById = async (id) => {
 }
 
 
-const updateUserProfileImageQuery = async (id, profileImage) => {
-    const query = `UPDATE users SET profile_image = $1 WHERE id = $2
-    RETURNING id, name, email, profile_image, created_at, updated_at`
-    const values = [profileImage, id];
+const updateUserProfileImageQuery = async (id, profileImage, publicId) => {
+    const query = `UPDATE users SET profile_image = $1, profile_image_public_id = $2 WHERE id = $3
+    RETURNING id, name, email, profile_image, profile_image_public_id, created_at, updated_at`
+    const values = [profileImage, publicId, id];
     const result = await pool.query(query, values);
 
     return result.rows[0];
