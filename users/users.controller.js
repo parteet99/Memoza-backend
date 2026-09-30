@@ -71,70 +71,6 @@ const users = async (req, res) => {
     }
 }
 
-const uploadProfileImage = async (req, res) => {
-    try {
-
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: "Please select a profile image"
-            })
-        }
-
-        const userId = req.user.userId;
-        const user = await getUserById(userId);
-
-        if (!user) {
-            if (req.file.path && fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
-            }
-
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            })
-        }
-
-        //save path in db
-        const profileImage = `/uploads/profile-images/${req.file.filename}`;
-
-        //update db
-        const updateUser = await updateUserProfileImageQuery(userId, profileImage);
-
-        //if old image delete it
-        if (user.profile_image) {
-            const oldImagePath = path.join(
-                process.cwd(),
-                user.profile_image.replace(/^\/+/, "")
-            );
-
-            if (fs.existsSync(oldImagePath)) {
-                fs.unlinkSync(oldImagePath)
-            }
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Profile image updated!",
-            user: updateUser
-        });
-
-        
-    } catch (err) {
-        console.error("Profile image upload failed", err);
-
-        //remove uploaded image if some error occured
-        if (req.file?.path && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-
-        return res.json(500).json({
-            success: false,
-            message: "Failed to upload profile image"
-        })
-    }
-}
-
 const updateUser = async (req, res) => {
     try {
         const { id, email, name } = req.body
@@ -171,4 +107,4 @@ const updateUser = async (req, res) => {
 }
 
 
-module.exports = {registerUser, users, getCurrentUser, uploadProfileImage, updateUser}
+module.exports = {registerUser, users, getCurrentUser, updateUser}
