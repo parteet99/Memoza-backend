@@ -14,6 +14,7 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(cors({
     // origin: "http://localhost:3000",
     origin: process.env.FRONTEND_URL,
