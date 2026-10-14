@@ -38,7 +38,6 @@ const loginUser = async (req, res) => {
 
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
 
-        console.log({tokenbeforehttp: token})
         //set token in cookie for 7d
         res.cookie("token", token, {
             httpOnly: true,
@@ -47,8 +46,6 @@ const loginUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: "/"
         })
-
-        console.log({token})
 
         res.status(200).json({
             message: "Login successful",
