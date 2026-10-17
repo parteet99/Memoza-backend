@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 
-const { getUserByEmail } = require("../users/users.queries");
+const { getUserByEmail, getUserById } = require("../users/users.queries");
 const { udpateUserPassword, getUserPassword, deleteExistingResetToken, deletePasswordResetToken, findUserByEmail, findValidResetToken, updateUserPassword, createPasswordResetToken } = require("./auth.queries");
 const { sendPasswordResetEmail } = require("../utils/sendPasswordResetEmail");
 
@@ -87,6 +87,29 @@ const logoutUser = async (req, res) => {
         });
     }
 };
+
+const getMe = async (req, res) => {
+    const token = req.cookies?.token;
+    if (!token) {
+        return res.status(401).json({ success: false });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await getUserById(decoded.userId);
+        if (!user) {
+            return res.status(401).json({ success: false });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user: { id: user.id, name: user.name, email: user.email }
+        })
+    } catch (error) {
+        return res.status(401).json({success: false, message: error})
+    }
+
+}
 
 const changePassword = async (req, res) => {
     try {
@@ -237,5 +260,5 @@ const resetPassword = async (req, res) => {
 }
 
 module.exports = {
-    loginUser, logoutUser, changePassword, forgotPassword, resetPassword
+    loginUser, logoutUser, changePassword, forgotPassword, resetPassword, getMe
 }
