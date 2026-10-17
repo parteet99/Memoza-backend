@@ -6,12 +6,19 @@ const { getUserByEmail } = require("../users/users.queries");
 const { udpateUserPassword, getUserPassword, deleteExistingResetToken, deletePasswordResetToken, findUserByEmail, findValidResetToken, updateUserPassword, createPasswordResetToken } = require("./auth.queries");
 const { sendPasswordResetEmail } = require("../utils/sendPasswordResetEmail");
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/"
+}
+
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.json(400).json({
+            return res.status(400).json({
                 success: false,
                 error: "Email and password is required."
             })
@@ -40,11 +47,8 @@ const loginUser = async (req, res) => {
 
         //set token in cookie for 7d
         res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            ...cookieOptions,
             maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: "/"
         })
 
         res.status(200).json({
@@ -68,11 +72,7 @@ const loginUser = async (req, res) => {
 
 const logoutUser = async (req, res) => {
     try {
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-        });
+        res.clearCookie("token", cookieOptions);
 
         return res.status(200).json({
             success: true,
