@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
+const { redis } = require("../config/redis")
 
 const { getUserByEmail, getUserById } = require("../users/users.queries");
 const { udpateUserPassword, getUserPassword, deleteExistingResetToken, deletePasswordResetToken, findUserByEmail, findValidResetToken, updateUserPassword, createPasswordResetToken } = require("./auth.queries");
@@ -72,6 +73,19 @@ const loginUser = async (req, res) => {
 
 const logoutUser = async (req, res) => {
     try {
+        const token = req.cookies.token;
+        if (token){
+            const decoded = jwt.decode(token);
+
+            if (decoded?.exp) {
+                const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+
+                if (ttl > 0) {
+                    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+                    await redis.set(`blacklist:${token}`, "true", { EX: ttl });
+                }
+            }
+        }
         res.clearCookie("token", cookieOptions);
 
         return res.status(200).json({

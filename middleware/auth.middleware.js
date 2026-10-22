@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { redis } = require("../config/redis");
 
-const requireAuth = (req, res, next) => {
+const requireAuth = async (req, res, next) => {
     try {
         const token = req.cookies.token;
 
@@ -11,7 +13,19 @@ const requireAuth = (req, res, next) => {
             })
         }
 
+        //verify jwt signature and expiry
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        //generate the same hash used during logout
+        const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+        const isBlackListed = await redis.exists(`blacklist:${tokenHash}`);
+        if (isBlackListed) {
+            return res.status(401).json({
+                success: false,
+                message: "Token has been revoked. Please login again"
+            })
+        }
 
         req.user = decoded;
 
