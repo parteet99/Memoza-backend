@@ -12,6 +12,7 @@ const aiRoutes = require("./AI/ai.routes")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const { connectRedis } = require("./config/redis");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -37,14 +38,19 @@ app.use("/api/favorite", favoriteRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/dashboard", countRoutes);
 
+async function startServer() {
+    try {
+        await pool.query("SELECT NOW()");
+        console.log("Database connected");
 
-pool.query("select now()")
-    .then(() => {
-        console.log("Database connected")
-    }).catch((err) => {
-        console.error("Database connection failed", err);
-    })
+        await connectRedis();
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        })
+    } catch (error) {
+        console.error("Server startup failed", error);
+        process.exit(1);
+    }
+}
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-})
+startServer();
