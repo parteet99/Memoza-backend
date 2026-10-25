@@ -38,6 +38,10 @@ app.use("/api/favorite", favoriteRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/dashboard", countRoutes);
 
+app.get("/health", (req, res) => {
+    res.status(200).send("ok");
+})
+
 async function startServer() {
     try {
         await pool.query("SELECT NOW()");
